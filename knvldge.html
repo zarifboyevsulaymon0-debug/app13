@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>My Personal Knowledge Hub</title>
+    <style>
+        :root { --primary: #00d2ff; --bg: #121212; --card: #1e1e1e; }
+        body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: var(--primary); letter-spacing: 2px; }
+        
+        .input-group { background: var(--card); padding: 20px; border-radius: 15px; display: grid; gap: 10px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input, select { background: #2d2d2d; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; outline: none; }
+        button { background: var(--primary); border: none; color: black; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        .search-bar { width: 100%; margin-bottom: 20px; font-size: 18px; }
+
+        .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .item-card { background: var(--card); padding: 15px; border-radius: 12px; border-left: 5px solid var(--primary); position: relative; animation: fadeIn 0.5s; }
+        .item-card h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 18px; }
+        .item-card p { font-size: 14px; color: #aaa; margin-bottom: 15px; }
+        .item-card a { color: #fff; text-decoration: none; background: #333; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        .delete-btn { position: absolute; top: 10px; right: 10px; color: #ff4d4d; cursor: pointer; border: none; background: none; font-size: 18px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>KNOWLEDGE HUB</h1>
+
+    <!-- Ma'lumot qo'shish -->
+    <div class="input-group">
+        <input type="text" id="title" placeholder="Sarlavha (masalan: Python darsi)">
+        <input type="text" id="link" placeholder="Havola (URL) yoki qisqa eslatma">
+        <select id="category">
+            <option value="Darslar">Darslar</option>
+            <option value="Kodlar">Kodlar</option>
+            <option value="Foydali">Foydali</option>
+        </select>
+        <button onclick="addItem()">SAQLASH</button>
+    </div>
+
+    <!-- Qidiruv -->
+    <input type="text" id="search" class="search-bar" placeholder="Qidirish..." onkeyup="displayItems()">
+
+    <!-- Ro'yxat -->
+    <div class="list" id="itemList"></div>
+</div>
+
+<script>
+    let items = JSON.parse(localStorage.getItem('my_knowledge_data')) || [];
+
+    function addItem() {
+        const title = document.getElementById('title').value;
+        const link = document.getElementById('link').value;
+        const category = document.getElementById('category').value;
+
+        if(!title || !link) return alert("Hamma joyni to'ldiring!");
+
+        const newItem = { id: Date.now(), title, link, category };
+        items.push(newItem);
+        save();
+        displayItems();
+        
+        document.getElementById('title').value = '';
+        document.getElementById('link').value = '';
+    }
+
+    function displayItems() {
+        const list = document.getElementById('itemList');
+        const searchTerm = document.getElementById('search').value.toLowerCase();
+        list.innerHTML = '';
+
+        items.filter(i => i.title.toLowerCase().includes(searchTerm) || i.category.toLowerCase().includes(searchTerm))
+             .forEach(item => {
+            list.innerHTML += `
+                <div class="item-card">
+                    <button class="delete-btn" onclick="deleteItem(${item.id})">×</button>
+                    <small style="color: #666">${item.category}</small>
+                    <h3>${item.title}</h3>
+                    <p>${item.link.substring(0, 40)}...</p>
+                    <a href="${item.link.startsWith('http') ? item.link : '#'}" target="_blank">OCHISH</a>
+                </div>
+            `;
+        });
+    }
+
+    function deleteItem(id) {
+        items = items.filter(i => i.id !== id);
+        save();
+        displayItems();
+    }
+
+    function save() {
+        localStorage.setItem('my_knowledge_data', JSON.stringify(items));
+    }
+
+    displayItems();
+</script>
+
+</body>
+</html>
